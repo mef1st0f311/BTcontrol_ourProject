@@ -258,8 +258,6 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
             }
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
 
-//        View sendBtn = view.findViewById(R.id.send_btn);
-//        sendBtn.setOnClickListener(v -> send(sendText.getText().toString()));
         return view;
     }
 
