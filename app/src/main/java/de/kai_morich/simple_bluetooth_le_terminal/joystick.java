@@ -178,4 +178,8 @@ public class joystick extends Activity{
 
         };
 
+<<<<<<< Updated upstream
     }
+=======
+    }
+>>>>>>> Stashed changes
