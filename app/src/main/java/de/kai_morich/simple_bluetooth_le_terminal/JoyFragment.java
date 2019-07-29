@@ -375,12 +375,12 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
     }
     void showInfo() {
         sb.setLength(0);
-        sb.append("Accelerometer: " + format(valuesAccel))
-                .append("\n\nAccel motion: " + format(valuesAccelMotion))
-                .append("\nAccel gravity : " + format(valuesAccelGravity))
-                .append("\n\nLin accel : " + format(valuesLinAccel))
-                .append("\nGravity : " + format(valuesGravity));
-        calibratorView.setOrientation(valuesAccel[1]);
+//        sb.append("Accelerometer: " + format(valuesAccel))
+//                .append("\n\nAccel motion: " + format(valuesAccelMotion))
+//                .append("\nAccel gravity : " + format(valuesAccelGravity))
+//                .append("\n\nLin accel : " + format(valuesLinAccel))
+//                .append("\nGravity : " + format(valuesGravity));
+//        calibratorView.setOrientation(valuesAccel[1]);
         tvText.setText(sb);
     }
 
