@@ -179,3 +179,4 @@ public class joystick extends Activity{
         };
 
     }
+//changed in joystick.cup_with_steem
