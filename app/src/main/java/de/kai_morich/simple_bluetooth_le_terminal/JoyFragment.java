@@ -192,16 +192,16 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
 //        receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
 //        TextView sendText = view.findViewById(R.id.send_text);
 
-        calibratorView = (CalibratorView) view.findViewById(R.id.calibrator);
-        calibratorView.setOnCalibrationListener(new CalibratorView.CalibrationListener() {
-
-            public void onCalibrationComplete(int percentage) {
-                // set threshold 70%
-                if (percentage > 70) {
-                    // do your staff calibration is done
-                }
-            }
-        });
+//        calibratorView = (joystickView) view.findViewById(R.id.joystickView);
+//        calibratorView.setOnCalibrationListener(new CalibratorView.CalibrationListener() {
+//
+//            public void onCalibrationComplete(int percentage) {
+//                // set threshold 70%
+//                if (percentage > 70) {
+//                    // do your staff calibration is done
+//                }
+//            }
+//        });
 
 
 

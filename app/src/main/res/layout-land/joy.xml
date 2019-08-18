@@ -12,25 +12,22 @@
 
         <TextView
             android:id="@+id/status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_width="720dp"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:visibility="visible" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
-            <com.xenione.libs.calibrator.CalibratorView
-                android:id="@+id/calibrator"
-                android:padding="10dp"
-                android:layout_width="match_parent"
-                android:layout_height="300dp" />
 
             <TextView
                 android:id="@+id/tvText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textSize="8sp"
+                android:textSize="14sp"
                 android:visibility="visible"></TextView>
 
             <LinearLayout
@@ -41,10 +38,8 @@
 
                 <com.zerokol.views.joystickView.JoystickView
                     android:id="@+id/joystickView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_alignStart="@+id/InfoLinearLayout"
-                    android:layout_alignTop="@+id/InfoLinearLayout" />
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
