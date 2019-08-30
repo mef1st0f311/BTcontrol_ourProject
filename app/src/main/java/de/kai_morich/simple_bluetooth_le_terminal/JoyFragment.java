@@ -373,20 +373,18 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
     }
     void showInfo() {
         sb.setLength(0);
-//        sb.append("Accelerometer: " + format(valuesAccel))
-//                .append("\n\nAccel motion: " + format(valuesAccelMotion))
-//                .append("\nAccel gravity : " + format(valuesAccelGravity))
-//                .append("\n\nLin accel : " + format(valuesLinAccel))
-//                .append("\nGravity : " + format(valuesGravity));
+//        sb.append("Accelerometer: " + valuesAccel);
+        if(valuesAccel>0){
+            sb.append("right");
+        }else{
+            sb.append("left");
+        }
+
 //        calibratorView.setOrientation(valuesAccel[1]);
         tvText.setText(sb);
     }
 
-    float[] valuesAccel = new float[3];
-    float[] valuesAccelMotion = new float[3];
-    float[] valuesAccelGravity = new float[3];
-    float[] valuesLinAccel = new float[3];
-    float[] valuesGravity = new float[3];
+    float valuesAccel;
 
     SensorEventListener listener = new SensorEventListener() {
 
@@ -398,23 +396,9 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         public void onSensorChanged(SensorEvent event) {
             switch (event.sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
-                    for (int i = 0; i < 3; i++) {
-                        valuesAccel[i] = event.values[i];
-                        valuesAccelGravity[i] = (float) (0.1 * event.values[i] + 0.9 * valuesAccelGravity[i]);
-                        valuesAccelMotion[i] = event.values[i]
-                                - valuesAccelGravity[i];
-                    }
+                        valuesAccel = event.values[1];
                     break;
-                case Sensor.TYPE_LINEAR_ACCELERATION:
-                    for (int i = 0; i < 3; i++) {
-                        valuesLinAccel[i] = event.values[i];
-                    }
-                    break;
-                case Sensor.TYPE_GRAVITY:
-                    for (int i = 0; i < 3; i++) {
-                        valuesGravity[i] = event.values[i];
-                    }
-                    break;
+
             }
 
         }
