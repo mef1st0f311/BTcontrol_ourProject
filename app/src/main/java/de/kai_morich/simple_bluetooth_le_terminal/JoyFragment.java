@@ -8,15 +8,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.ActivityInfo;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Matrix;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -31,7 +25,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.hardware.Sensor;
@@ -43,10 +36,8 @@ import com.xenione.libs.calibrator.CalibratorView;
 import com.xenione.libs.calibrator.orientation.OrientationService;
 import com.zerokol.views.joystickView.JoystickView;
 
-import java.math.BigInteger;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 
 import static android.content.Context.SENSOR_SERVICE;
 
@@ -75,19 +66,11 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
     Sensor sensorAccel;
     Sensor sensorLinAccel;
     Sensor sensorGravity;
-    int v_rotate_old = 1250;
     private TextView angleTextView;
     private TextView powerTextView;
     private TextView directionTextView;
-
-    ImageView imageView;
     // Importing also other views
     private JoystickView joystick;
-
-    private Bitmap ball;
-    private float xPos, xAccel, xVel = 0.0f;
-    private float yPos, yAccel, yVel = 0.0f;
-    private float xMax, yMax;
 
     StringBuilder sb = new StringBuilder();
 
@@ -105,9 +88,6 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         setHasOptionsMenu(true);
         setRetainInstance(true);
         deviceAddress = getArguments().getString("device");
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-
-
 
     }
 
@@ -116,7 +96,6 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         if (connected != Connected.False)
             disconnect();
         getActivity().stopService(new Intent(getActivity(), SerialService.class));
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
         super.onDestroy();
     }
 
@@ -202,15 +181,12 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         service = null;
     }
 
-
     /*
      * UI
      */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.joy, container, false);
-
 //        receiveText = view.findViewById(R.id.receive_text);                          // TextView performance decreases with number of spans
 //        receiveText.setTextColor(getResources().getColor(R.color.colorRecieveText)); // set as default color to reduce number of spans
 //        receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
@@ -228,9 +204,9 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
 //        });
 
 
+
         tvText = view.findViewById(R.id.tvText);
         status = view.findViewById(R.id.status);
-        imageView = view.findViewById(R.id.imageView);
         sensorManager = (SensorManager) getActivity().getSystemService(SENSOR_SERVICE);
         sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         sensorLinAccel = sensorManager
@@ -315,12 +291,7 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
 //        }
 //    }
 
-
-    public void onMyButtonClick(View view) {
-        old_valuesAccel = valuesAccel;
-
-    }
-        /*
+    /*
      * Serial + UI
      */
     private void connect() {
@@ -361,27 +332,6 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         }
     }
 
-    private byte[] bigIntToByteArray( final int i ) {
-        BigInteger bigInt = BigInteger.valueOf(i);
-        return bigInt.toByteArray();
-    }
-
-    private void send(int value) {
-        if(connected != Connected.True) {
-            Toast.makeText(getActivity(), "not connected", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        try {
-            SpannableStringBuilder spn = new SpannableStringBuilder(String.valueOf(value)+'\n');
-            spn.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.colorSendText)), 0, spn.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            status.setText(spn);
-            byte[] data = bigIntToByteArray(value);
-            socket.write(data);
-        } catch (Exception e) {
-            onSerialIoError(e);
-        }
-    }
-
     private void receive(byte[] data) {
 //        receiveText.append(new String(data));
     }
@@ -403,9 +353,8 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
 
     @Override
     public void onSerialConnectError(Exception e) {
-        status(" connection failed: " + e.getMessage());
+        status("connection failed: " + e.getMessage());
         disconnect();
-        connect();
     }
 
     @Override
@@ -417,63 +366,25 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
     public void onSerialIoError(Exception e) {
         status("connection lost: " + e.getMessage());
         disconnect();
-        connect();
     }
     String format(float values[]) {
         return String.format("%1$.1f\t\t%2$.1f\t\t%3$.1f", values[0], values[1],
                 values[2]);
     }
     void showInfo() {
-        int v_rotate =  (int)((valuesAccel+9)*14);
-        Matrix matrix = new Matrix();
-        imageView.setScaleType(ImageView.ScaleType.MATRIX);   //required
-        matrix.postRotate((float) valuesAccel*10-old_valuesAccel,
-                imageView.getDrawable().getBounds().width()/2,
-                imageView.getDrawable().getBounds().height()/2);
-
-        imageView.setImageMatrix(matrix);
-
-
-        if(Math.abs(v_rotate-v_rotate_old)>10){
-            if(v_rotate<0) v_rotate=0;
-            else if(v_rotate>255) v_rotate=255;
-            send("r");
-//            final Handler handler = new Handler();
-//            handler.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-            sb.setLength(0);
-            sb.append(v_rotate);
-//            for(int i = v_rotate_old ; i<=v_rotate ; i+=2){
-            try {
-                TimeUnit.MILLISECONDS.sleep(20);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-                send(v_rotate);
-
-
-//            }
-            v_rotate_old = v_rotate;
-//                }
-//            }, 1000);
+        sb.setLength(0);
+//        sb.append("Accelerometer: " + valuesAccel);
+        if(valuesAccel>0){
+            sb.append("right");
+        }else{
+            sb.append("left");
         }
 
-
-//        if(valuesAccel>0){
-//            sb.append("right");
-//        }else{
-//            sb.append("left");
-//        }
-
 //        calibratorView.setOrientation(valuesAccel[1]);
-
         tvText.setText(sb);
     }
 
     float valuesAccel;
-
-    float old_valuesAccel = 0;
 
     SensorEventListener listener = new SensorEventListener() {
 
