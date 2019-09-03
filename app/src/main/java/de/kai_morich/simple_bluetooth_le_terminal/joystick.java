@@ -1,11 +1,16 @@
 package de.kai_morich.simple_bluetooth_le_terminal;
 
 import android.app.Activity;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import com.zerokol.views.joystickView.JoystickView;
 import com.zerokol.views.joystickView.JoystickView.OnJoystickMoveListener;
@@ -30,6 +35,11 @@ public class joystick extends Activity{
         private TextView directionTextView;
         // Importing also other views
         private JoystickView joystick;
+
+        private Bitmap ball;
+        private float xPos, xAccel, xVel = 0.0f;
+        private float yPos, yAccel, yVel = 0.0f;
+        private float xMax, yMax;
 
         StringBuilder sb = new StringBuilder();
 
@@ -88,6 +98,12 @@ public class joystick extends Activity{
                     }
                 }
             }, JoystickView.DEFAULT_LOOP_INTERVAL);
+
+
+            Bitmap ballSrc = BitmapFactory.decodeResource(getResources(), R.drawable.ball);
+            final int dstWidth = 100;
+            final int dstHeight = 100;
+            ball = Bitmap.createScaledBitmap(ballSrc, dstWidth, dstHeight, true);
         }
 
 
@@ -177,5 +193,23 @@ public class joystick extends Activity{
                 }
 
         };
+
+
+    private class BallView extends View {
+
+        public BallView(Context context) {
+            super(context);
+            Bitmap ballSrc = BitmapFactory.decodeResource(getResources(), R.drawable.ball);
+            final int dstWidth = 100;
+            final int dstHeight = 100;
+            ball = Bitmap.createScaledBitmap(ballSrc, dstWidth, dstHeight, true);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            canvas.drawBitmap(ball, xPos, yPos, null);
+            invalidate();
+        }
+    }
 
     }
