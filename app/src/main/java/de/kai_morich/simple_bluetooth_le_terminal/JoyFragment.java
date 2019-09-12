@@ -44,6 +44,7 @@ import com.xenione.libs.calibrator.orientation.OrientationService;
 import com.zerokol.views.joystickView.JoystickView;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -247,38 +248,49 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
             @Override
             public void onValueChanged(int angle, int power, int direction) {
                 // TODO Auto-generated method stub
-//                angleTextView.setText(" " + String.valueOf(angle) + "°");
-//                powerTextView.setText(" " + String.valueOf(power) + "%");
 
-                //send(String.valueOf(angle)+" "+String.valueOf(power*2));
-                switch (direction) {
-                    case JoystickView.FRONT:
-                        send(String.valueOf(power*2));
-                        break;
-                    case JoystickView.FRONT_RIGHT:
-                        send(String.valueOf(power*2));
-                        break;
-                    case JoystickView.RIGHT:
-                        send(String.valueOf(power*2));
-                        break;
-                    case JoystickView.RIGHT_BOTTOM:
-                        send(String.valueOf(power*2*-1));
-                        break;
-                    case JoystickView.BOTTOM:
-                        send(String.valueOf(power*2*-1));
-                        break;
-                    case JoystickView.BOTTOM_LEFT:
-                        send(String.valueOf(power*2*-1));
-                        break;
-                    case JoystickView.LEFT:
-                        send(String.valueOf(power*2));
-                        break;
-                    case JoystickView.LEFT_FRONT:
-                        send(String.valueOf(power*2));
-                        break;
-                    default:
-                        send(String.valueOf(0));
-                }
+                status(String.valueOf(direction));
+                    switch (direction) {
+                        case 0:
+                            send('D',power * 2);
+                            break;
+                        case 1:
+                            send('D',power * 2);
+                            break;
+                        case 2:
+                            send('D',power * 2);
+                            break;
+                        case 3:
+                            send('D',power * 2);
+                            break;
+                        case 4:
+                            send('D',power * 2);
+                            break;
+                        case 5:
+                            send('D',power * 2);
+                            break;
+
+                        case 6:
+                            if(power==0)send('R',0);
+                            else send('R',50);
+                            break;
+                        case 7:
+                            if(power==0)send('R',0);
+                            else send('R',50);
+                            break;
+                        case 8:
+                            if(power==0)send('R',0);
+                            else send('R',50);
+                            break;
+                        default:
+                            send(0);
+                    }
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(30);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
             }
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
 
@@ -333,6 +345,7 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
             socket = new SerialSocket();
             service.connect(this, "Connected to " + deviceName);
             socket.connect(getContext(), service, device);
+
         } catch (Exception e) {
             onSerialConnectError(e);
         }
@@ -361,10 +374,10 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         }
     }
 
-    private byte[] bigIntToByteArray( final int i ) {
-        BigInteger bigInt = BigInteger.valueOf(i);
-        return bigInt.toByteArray();
-    }
+//    private byte[] bigIntToByteArray( final int i ) {
+//        BigInteger bigInt = BigInteger.valueOf(i);
+//        return bigInt.toByteArray();
+//    }
 
     private void send(int value) {
         if(connected != Connected.True) {
@@ -372,10 +385,29 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
             return;
         }
         try {
-            SpannableStringBuilder spn = new SpannableStringBuilder(String.valueOf(value)+'\n');
-            spn.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.colorSendText)), 0, spn.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            status.setText(spn);
-            byte[] data = bigIntToByteArray(value);
+            //SpannableStringBuilder spn = new SpannableStringBuilder(String.valueOf(value));
+            //spn.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.colorSendText)), 0, spn.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            //status.setText(spn);
+            byte[] data = new byte[1];
+            data[0] = (byte)value;
+            socket.write(data);
+        } catch (Exception e) {
+            onSerialIoError(e);
+        }
+    }
+
+    private void send(int type_operation,int value) {
+        if(connected != Connected.True) {
+            Toast.makeText(getActivity(), "not connected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        try {
+            //SpannableStringBuilder spn = new SpannableStringBuilder(String.valueOf(value));
+            //spn.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.colorSendText)), 0, spn.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            //status.setText(spn);
+            byte[] data = new byte[2];
+            data[0] = (byte)type_operation;
+            data[1] = (byte)value;
             socket.write(data);
         } catch (Exception e) {
             onSerialIoError(e);
@@ -434,10 +466,12 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         imageView.setImageMatrix(matrix);
 
 
-        if(Math.abs(v_rotate-v_rotate_old)>10){
+        if(Math.abs(v_rotate-v_rotate_old)>1){
             if(v_rotate<0) v_rotate=0;
             else if(v_rotate>255) v_rotate=255;
-            send("r");
+
+
+
 //            final Handler handler = new Handler();
 //            handler.postDelayed(new Runnable() {
 //                @Override
@@ -445,12 +479,15 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
             sb.setLength(0);
             sb.append(v_rotate);
 //            for(int i = v_rotate_old ; i<=v_rotate ; i+=2){
+            if(v_rotate!='R'|v_rotate!='D') {
+                send('S',v_rotate);
+            }
             try {
                 TimeUnit.MILLISECONDS.sleep(20);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-                send(v_rotate);
+
 
 
 //            }

@@ -54,29 +54,26 @@ public class JoystickView extends View implements Runnable {
 
     protected void initJoystickView() {
         mainCircle = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mainCircle.setColor(Color.WHITE);
+        mainCircle.setColor(Color.BLACK);
         mainCircle.setStyle(Paint.Style.FILL_AND_STROKE);
 
         secondaryCircle = new Paint();
-        secondaryCircle.setColor(Color.GREEN);
+        secondaryCircle.setColor(Color.BLACK);
         secondaryCircle.setStyle(Paint.Style.STROKE);
 
         verticalLine = new Paint();
         verticalLine.setStrokeWidth(5);
-        verticalLine.setColor(Color.RED);
+        verticalLine.setColor(Color.BLACK);
 
         horizontalLine = new Paint();
         horizontalLine.setStrokeWidth(2);
         horizontalLine.setColor(Color.BLACK);
 
         button = new Paint(Paint.ANTI_ALIAS_FLAG);
-        button.setColor(Color.RED);
+        button.setColor(Color.GRAY);
         button.setStyle(Paint.Style.FILL);
     }
 
-    @Override
-    protected void onFinishInflate() {
-    }
 
     @Override
     protected void onSizeChanged(int xNew, int yNew, int xOld, int yOld) {
@@ -125,14 +122,14 @@ public class JoystickView extends View implements Runnable {
         centerY = (getHeight()) / 2;
 
         // painting the main circle
-        canvas.drawCircle((int) centerX, (int) centerY, joystickRadius,
+        canvas.drawCircle((int) centerX, (int) centerY, joystickRadius / 2+10,
                 mainCircle);
         // painting the secondary circle
         canvas.drawCircle((int) centerX, (int) centerY, joystickRadius / 2,
                 secondaryCircle);
         // paint lines
-        canvas.drawLine((float) centerX, (float) centerY, (float) centerX,
-                (float) (centerY - joystickRadius), verticalLine);
+        //canvas.drawLine((float) centerX, (float) centerY, (float) centerX,
+                //(float) (centerY - joystickRadius), verticalLine);
         canvas.drawLine((float) (centerX - joystickRadius), (float) centerY,
                 (float) (centerX + joystickRadius), (float) centerY,
                 horizontalLine);
@@ -140,7 +137,7 @@ public class JoystickView extends View implements Runnable {
                 (float) centerX, (float) centerY, horizontalLine);
 
         // painting the move button
-        canvas.drawCircle(xPosition, yPosition, buttonRadius, button);
+        canvas.drawCircle(xPosition, yPosition, joystickRadius / 2, button);
     }
 
     @Override
