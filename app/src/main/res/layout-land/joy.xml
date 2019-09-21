@@ -43,8 +43,7 @@
                 android:layout_weight="1"
                 android:scaleType="matrix"
                 android:scrollbarSize="4dp"
-                circular:srcCompat="@drawable/rul"
-                android:onClick="onMyButtonClick"/>
+                circular:srcCompat="@drawable/rul" />
 
         </LinearLayout>
     </LinearLayout>

@@ -128,8 +128,8 @@ public class JoystickView extends View implements Runnable {
         canvas.drawCircle((int) centerX, (int) centerY, joystickRadius / 2,
                 secondaryCircle);
         // paint lines
-        //canvas.drawLine((float) centerX, (float) centerY, (float) centerX,
-                //(float) (centerY - joystickRadius), verticalLine);
+        canvas.drawLine((float) centerX, (float) centerY, (float) centerX,
+                (float) (centerY - joystickRadius), verticalLine);
         canvas.drawLine((float) (centerX - joystickRadius), (float) centerY,
                 (float) (centerX + joystickRadius), (float) centerY,
                 horizontalLine);
@@ -216,9 +216,9 @@ public class JoystickView extends View implements Runnable {
     }
 
     private int getDirection() {
-        if (lastPower == 0 && lastAngle == 0) {
-            return 0;
-        }
+//        if (lastPower == 0 && lastAngle == 0) {
+//            return 0;
+//        }
         int a = 0;
         if (lastAngle <= 0) {
             a = (lastAngle * -1) + 90;

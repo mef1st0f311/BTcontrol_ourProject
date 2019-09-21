@@ -1,7 +1,6 @@
 package de.kai_morich.simple_bluetooth_le_terminal;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
@@ -10,41 +9,27 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
-import android.text.method.ScrollingMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-
 import com.xenione.libs.calibrator.CalibratorView;
-import com.xenione.libs.calibrator.orientation.OrientationService;
 import com.zerokol.views.joystickView.JoystickView;
-
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -54,22 +39,13 @@ import static android.content.Context.SENSOR_SERVICE;
 public class JoyFragment extends Fragment implements ServiceConnection, SerialListener {
 
     private enum Connected { False, Pending, True }
-
     private String deviceAddress;
     private String newline = "\r\n";
-
-    private TextView receiveText;
-
-    private CalibratorView calibratorView;
-
     private SerialSocket socket;
     private SerialService service;
     private boolean initialStart = true;
     private Connected connected = Connected.False;
-
     TextView status;
-
-
     //joy
     TextView tvText;
     SensorManager sensorManager;
@@ -77,29 +53,16 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
     Sensor sensorLinAccel;
     Sensor sensorGravity;
     int v_rotate_old = 1250;
-    private TextView angleTextView;
-    private TextView powerTextView;
-    private TextView directionTextView;
-
     ImageView imageView;
-    // Importing also other views
     private JoystickView joystick;
-
-    private Bitmap ball;
-    private float xPos, xAccel, xVel = 0.0f;
-    private float yPos, yAccel, yVel = 0.0f;
-    private float xMax, yMax;
-
     StringBuilder sb = new StringBuilder();
-
     Timer timer;
+    float valuesAccel;
+    float old_valuesAccel = 0;
 
     public JoyFragment() {
     }
 
-    /*
-     * Lifecycle
-     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,9 +70,6 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         setRetainInstance(true);
         deviceAddress = getArguments().getString("device");
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-
-
-
     }
 
     @Override
@@ -137,11 +97,11 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         super.onStop();
     }
 
-    @SuppressWarnings("deprecation") // onAttach(context) was added with API 23. onAttach(activity) works for all API versions
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        getActivity().bindService(new Intent(getActivity(), SerialService.class), this, Context.BIND_AUTO_CREATE);
+        getActivity().bindService(new Intent(getActivity(), SerialService.class),
+                this, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -152,21 +112,14 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
 
     @Override
     public void onResume() {
-
         super.onResume();
-
         if(initialStart && service !=null) {
             initialStart = false;
             getActivity().runOnUiThread(this::connect);
         }
-
-        sensorManager.registerListener(listener, sensorAccel,
-                SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(listener, sensorLinAccel,
-                SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(listener, sensorGravity,
-                SensorManager.SENSOR_DELAY_NORMAL);
-
+        sensorManager.registerListener(listener, sensorAccel, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(listener, sensorLinAccel, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(listener, sensorGravity, SensorManager.SENSOR_DELAY_NORMAL);
         timer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
@@ -180,7 +133,6 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
             }
         };
         timer.schedule(task, 0, 100);
-
     }
     @Override
     public void onPause() {
@@ -211,24 +163,6 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.joy, container, false);
-
-//        receiveText = view.findViewById(R.id.receive_text);                          // TextView performance decreases with number of spans
-//        receiveText.setTextColor(getResources().getColor(R.color.colorRecieveText)); // set as default color to reduce number of spans
-//        receiveText.setMovementMethod(ScrollingMovementMethod.getInstance());
-//        TextView sendText = view.findViewById(R.id.send_text);
-
-//        calibratorView = (joystickView) view.findViewById(R.id.joystickView);
-//        calibratorView.setOnCalibrationListener(new CalibratorView.CalibrationListener() {
-//
-//            public void onCalibrationComplete(int percentage) {
-//                // set threshold 70%
-//                if (percentage > 70) {
-//                    // do your staff calibration is done
-//                }
-//            }
-//        });
-
-
         tvText = view.findViewById(R.id.tvText);
         status = view.findViewById(R.id.status);
         imageView = view.findViewById(R.id.imageView);
@@ -237,59 +171,39 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         sensorLinAccel = sensorManager
                 .getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         sensorGravity = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-//        angleTextView = view.findViewById(R.id.angleTextView);
-//        powerTextView = view.findViewById(R.id.powerTextView);
-//        directionTextView = view.findViewById(R.id.directionTextView);
-        //Referencing also other views
         joystick = (JoystickView) view.findViewById(R.id.joystickView);
-        //Event listener that always returns the variation of the angle in degrees, motion power in percentage and direction of movement
         joystick.setOnJoystickMoveListener(new JoystickView.OnJoystickMoveListener() {
 
             @Override
             public void onValueChanged(int angle, int power, int direction) {
-                // TODO Auto-generated method stub
 
                 status(String.valueOf(direction));
-                    switch (direction) {
-                        case 0:
-                            send('D',power * 2);
-                            break;
-                        case 1:
-                            send('D',power * 2);
-                            break;
-                        case 2:
-                            send('D',power * 2);
-                            break;
-                        case 3:
-                            send('D',power * 2);
-                            break;
-                        case 4:
-                            send('D',power * 2);
-                            break;
-                        case 5:
-                            send('D',power * 2);
-                            break;
+                int speed = power*2;
+                if (speed=='S'|speed=='D'|speed=='R')speed-=1;
+                if(direction == 0)
+                {
+                    send('D',0);
 
-                        case 6:
-                            if(power==0)send('R',0);
-                            else send('R',50);
-                            break;
-                        case 7:
-                            if(power==0)send('R',0);
-                            else send('R',50);
-                            break;
-                        case 8:
-                            if(power==0)send('R',0);
-                            else send('R',50);
-                            break;
-                        default:
-                            send(0);
+                }else if(direction == 1 |  direction == 2 | direction == 4 | direction == 5)
+                {
+                    send('D',speed);
+                }else if(direction == 6 | direction == 7 | direction == 8)
+                {
+                    send('R',150);
+                }else if(direction == 3)
+                {
+                    if(power==0){
+                        send('D',0);
                     }
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(30);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    else send('D',speed);
+                }else {
+                    send('D',0);
+                }
+                try {
+                    TimeUnit.MILLISECONDS.sleep(30);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 
             }
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
@@ -297,44 +211,6 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         return view;
     }
 
-
-
-//    @Override
-//    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-//        inflater.inflate(R.menu.menu_terminal, menu);
-//    }
-
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        int id = item.getItemId();
-//        if (id == R.id.clear) {
-//            receiveText.setText("");
-//            return true;
-//        } else if (id ==R.id.newline) {
-//            String[] newlineNames = getResources().getStringArray(R.array.newline_names);
-//            String[] newlineValues = getResources().getStringArray(R.array.newline_values);
-//            int pos = java.util.Arrays.asList(newlineValues).indexOf(newline);
-//            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-//            builder.setTitle("Newline");
-//            builder.setSingleChoiceItems(newlineNames, pos, (dialog, item1) -> {
-//                newline = newlineValues[item1];
-//                dialog.dismiss();
-//            });
-//            builder.create().show();
-//            return true;
-//        } else {
-//            return super.onOptionsItemSelected(item);
-//        }
-//    }
-
-
-    public void onMyButtonClick(View view) {
-        old_valuesAccel = valuesAccel;
-
-    }
-        /*
-     * Serial + UI
-     */
     private void connect() {
         try {
             BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -374,20 +250,12 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         }
     }
 
-//    private byte[] bigIntToByteArray( final int i ) {
-//        BigInteger bigInt = BigInteger.valueOf(i);
-//        return bigInt.toByteArray();
-//    }
-
     private void send(int value) {
         if(connected != Connected.True) {
             Toast.makeText(getActivity(), "not connected", Toast.LENGTH_SHORT).show();
             return;
         }
         try {
-            //SpannableStringBuilder spn = new SpannableStringBuilder(String.valueOf(value));
-            //spn.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.colorSendText)), 0, spn.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            //status.setText(spn);
             byte[] data = new byte[1];
             data[0] = (byte)value;
             socket.write(data);
@@ -398,13 +266,10 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
 
     private void send(int type_operation,int value) {
         if(connected != Connected.True) {
-            Toast.makeText(getActivity(), "not connected", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getActivity(), "not connected", Toast.LENGTH_SHORT).show();
             return;
         }
         try {
-            //SpannableStringBuilder spn = new SpannableStringBuilder(String.valueOf(value));
-            //spn.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.colorSendText)), 0, spn.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            //status.setText(spn);
             byte[] data = new byte[2];
             data[0] = (byte)type_operation;
             data[1] = (byte)value;
@@ -451,10 +316,7 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         disconnect();
         connect();
     }
-    String format(float values[]) {
-        return String.format("%1$.1f\t\t%2$.1f\t\t%3$.1f", values[0], values[1],
-                values[2]);
-    }
+
     void showInfo() {
         int v_rotate =  (int)((valuesAccel+9)*14);
         Matrix matrix = new Matrix();
@@ -469,17 +331,9 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         if(Math.abs(v_rotate-v_rotate_old)>1){
             if(v_rotate<0) v_rotate=0;
             else if(v_rotate>255) v_rotate=255;
-
-
-
-//            final Handler handler = new Handler();
-//            handler.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
             sb.setLength(0);
             sb.append(v_rotate);
-//            for(int i = v_rotate_old ; i<=v_rotate ; i+=2){
-            if(v_rotate!='R'|v_rotate!='D') {
+            if(v_rotate!='R' && v_rotate!='D') {
                 send('S',v_rotate);
             }
             try {
@@ -487,30 +341,10 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
-
-
-//            }
             v_rotate_old = v_rotate;
-//                }
-//            }, 1000);
         }
-
-
-//        if(valuesAccel>0){
-//            sb.append("right");
-//        }else{
-//            sb.append("left");
-//        }
-
-//        calibratorView.setOrientation(valuesAccel[1]);
-
         tvText.setText(sb);
     }
-
-    float valuesAccel;
-
-    float old_valuesAccel = 0;
 
     SensorEventListener listener = new SensorEventListener() {
 
