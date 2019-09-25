@@ -176,13 +176,19 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
 
             @Override
             public void onValueChanged(int angle, int power, int direction) {
-
-                status(String.valueOf(direction));
+                try {
+                    TimeUnit.MILLISECONDS.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 int speed = power*2;
-                if (speed=='S'|speed=='D'|speed=='R')speed-=1;
+                status(String.valueOf(speed));
+
+                if (speed=='S'|speed=='D'|speed=='R')
+                    speed-=3;
                 if(direction == 0)
                 {
-                    send('D',0);
+                   // send('D',0);
 
                 }else if(direction == 1 |  direction == 2 | direction == 4 | direction == 5)
                 {
@@ -199,11 +205,7 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
                 }else {
                     send('D',0);
                 }
-                try {
-                    TimeUnit.MILLISECONDS.sleep(30);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+
 
             }
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
@@ -248,6 +250,11 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
         } catch (Exception e) {
             onSerialIoError(e);
         }
+        try {
+            TimeUnit.MILLISECONDS.sleep(30);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void send(int value) {
@@ -261,6 +268,11 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
             socket.write(data);
         } catch (Exception e) {
             onSerialIoError(e);
+        }
+        try {
+            TimeUnit.MILLISECONDS.sleep(30);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -276,6 +288,11 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
             socket.write(data);
         } catch (Exception e) {
             onSerialIoError(e);
+        }
+        try {
+            TimeUnit.MILLISECONDS.sleep(30);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -318,7 +335,7 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
     }
 
     void showInfo() {
-        int v_rotate =  (int)((valuesAccel+9)*14);
+        int v_rotate =  255-(int)((valuesAccel+9)*14);
         Matrix matrix = new Matrix();
         imageView.setScaleType(ImageView.ScaleType.MATRIX);   //required
         matrix.postRotate((float) valuesAccel*10-old_valuesAccel,
@@ -327,20 +344,22 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
 
         imageView.setImageMatrix(matrix);
 
-
-        if(Math.abs(v_rotate-v_rotate_old)>1){
+        try {
+            TimeUnit.MILLISECONDS.sleep(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if(Math.abs(v_rotate-v_rotate_old)>5){
             if(v_rotate<0) v_rotate=0;
             else if(v_rotate>255) v_rotate=255;
             sb.setLength(0);
             sb.append(v_rotate);
-            if(v_rotate!='R' && v_rotate!='D') {
-                send('S',v_rotate);
+            if(v_rotate=='R' | v_rotate=='D' | v_rotate=='S')
+            {
+                v_rotate-=3;
             }
-            try {
-                TimeUnit.MILLISECONDS.sleep(20);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            send('S',v_rotate);
+
             v_rotate_old = v_rotate;
         }
         tvText.setText(sb);
