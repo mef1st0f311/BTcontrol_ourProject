@@ -33,7 +33,6 @@
                 android:textSize="8sp"
                 android:visibility="visible"></TextView>
 
-<<<<<<< Updated upstream
             <LinearLayout
                 android:id="@+id/InfoLinearLayout"
                 android:layout_width="wrap_content"
@@ -47,23 +46,6 @@
                     android:layout_alignStart="@+id/InfoLinearLayout"
                     android:layout_alignTop="@+id/InfoLinearLayout" />
             </LinearLayout>
-=======
-            <com.zerokol.views.joystickView.JoystickView
-                android:id="@+id/joystickView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:rotation="90" />
-
-            <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:onClick="onMyButtonClick"
-                android:scaleType="matrix"
-                android:scrollbarSize="1dp"
-                circular:srcCompat="@drawable/rul" />
-
->>>>>>> Stashed changes
         </LinearLayout>
     </LinearLayout>
 
