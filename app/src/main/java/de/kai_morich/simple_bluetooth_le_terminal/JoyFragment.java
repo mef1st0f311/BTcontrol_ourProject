@@ -223,6 +223,7 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
             @Override
             public void onValueChanged(int angle, int power, int direction) {
                 // TODO Auto-generated method stub
+<<<<<<< Updated upstream
 //                angleTextView.setText(" " + String.valueOf(angle) + "°");
 //                powerTextView.setText(" " + String.valueOf(power) + "%");
 
@@ -255,6 +256,56 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
                     default:
                         send(String.valueOf(0));
                 }
+=======
+
+                status(String.valueOf(direction));
+                if(power * 2!='S' ) {
+                    switch (direction) {
+                        case 0:
+                            send('D', 0);
+                            break;
+                        case 1:
+                            if (power == 0) send('R', 0);
+                            else send('R', 150);
+                            break;
+                        case 2:
+                            if (power == 0) send('R', 0);
+                            else send('R', 150);
+                            break;
+                        case 3:
+                            send('D', 0);
+                            break;
+                        case 4:
+                            send('D', power * 2);
+                            break;
+                        case 5:
+                            send('D', power * 2);
+                            break;
+                        case 6:
+                            send('D', power * 2);
+                            break;
+                        case 7:
+                            send('D', 0);
+                            break;
+                        case 8:
+                            if (power == 0) send('R', 0);
+                            else send('R', 150);
+                            break;
+                        default:
+                            send('D', 0);
+                            send('R', 0);
+                            break;
+                    }
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(50);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }else{
+                    //send(0);
+                }
+
+>>>>>>> Stashed changes
             }
         }, JoystickView.DEFAULT_LOOP_INTERVAL);
 
@@ -374,6 +425,7 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
                 values[2]);
     }
     void showInfo() {
+<<<<<<< Updated upstream
         sb.setLength(0);
         sb.append("Accelerometer: " + format(valuesAccel))
                 .append("\n\nAccel motion: " + format(valuesAccelMotion))
@@ -381,6 +433,57 @@ public class JoyFragment extends Fragment implements ServiceConnection, SerialLi
                 .append("\n\nLin accel : " + format(valuesLinAccel))
                 .append("\nGravity : " + format(valuesGravity));
         calibratorView.setOrientation(valuesAccel[1]);
+=======
+        int v_rotate =  255-(int)((valuesAccel+9)*14);
+        Matrix matrix = new Matrix();
+        imageView.setScaleType(ImageView.ScaleType.MATRIX);   //required
+        matrix.postRotate((float) valuesAccel*10-old_valuesAccel,
+                imageView.getDrawable().getBounds().width()/2,
+                imageView.getDrawable().getBounds().height()/2);
+
+        imageView.setImageMatrix(matrix);
+
+
+        if(Math.abs(v_rotate-v_rotate_old)>1){
+            if(v_rotate<0) v_rotate=0;
+            else if(v_rotate>255) v_rotate=255;
+
+
+
+//            final Handler handler = new Handler();
+//            handler.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+            sb.setLength(0);
+            sb.append(v_rotate);
+//            for(int i = v_rotate_old ; i<=v_rotate ; i+=2){
+            if(v_rotate!='R'|v_rotate!='D') {
+                send('S',v_rotate);
+            }
+            try {
+                TimeUnit.MILLISECONDS.sleep(20);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+
+
+//            }
+            v_rotate_old = v_rotate;
+//                }
+//            }, 1000);
+        }
+
+
+//        if(valuesAccel>0){
+//            sb.append("right");
+//        }else{
+//            sb.append("left");
+//        }
+
+//        calibratorView.setOrientation(valuesAccel[1]);
+
+>>>>>>> Stashed changes
         tvText.setText(sb);
     }
 
